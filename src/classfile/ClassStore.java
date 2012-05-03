@@ -1,7 +1,6 @@
 package classfile;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -95,43 +94,43 @@ public class ClassStore {
 
 	public static void main(String[] args) throws Exception {
 		long startTime = System.currentTimeMillis();
-		Path rs = FileSystems.getDefault().getPath("C:\\Users\\Aaron Willey\\Downloads\\rs041412\\decrypted\\");
-		Path allatori = FileSystems.getDefault().getPath("C:\\Users\\Aaron Willey\\Downloads\\Allatori-4.1-Demo\\Allatori-4.1-Demo\\lib\\allatori\\com\\allatori");
-		Path rt = FileSystems.getDefault().getPath("C:\\Program Files\\Java\\jre7\\lib\\rt.jar");
+		Path rs = FileSystems.getDefault().getPath("jars/rs.jar");
+		Path allatori = FileSystems.getDefault().getPath("jars/allatori.jar");
+		Path rt = FileSystems.getDefault().getPath("jars/rt.jar");
 		addSearchPath(rs);
 		addSearchPath(allatori);
 		addSearchPath(rt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("Adding paths took " + (endTime - startTime) + " ms");
-		/*long totalStart = System.currentTimeMillis();
+		long cumulativeStartTime = System.currentTimeMillis();
 		for (Set<Path> pathSet : paths.values()) {
-			for (Path path : pathSet) {*/
+			for (Path path : pathSet) {
 				startTime = System.currentTimeMillis();
-				JavaClass clazz = findClass("jeb");
-				System.out.println(clazz.thisType);
+				JavaClass clazz = loadClass(path);
+				//System.out.println(clazz.thisType);
 				endTime = System.currentTimeMillis();
-				System.out.println("Class load took " + (endTime - startTime) + " ms");
+				//System.out.println("Class load took " + (endTime - startTime) + " ms");
 				startTime = System.currentTimeMillis();
 				for (JavaMethod method : clazz.methods.values()) {
 					if (method.code != null) {
-						System.out.println(method.reference);
-						MethodAnalyzer analyzer = new MethodAnalyzer(method);
-						String gml = analyzer.dataGML();
+						//System.out.println(method.reference);
+						new MethodAnalyzer(method);
+						/*String gml = analyzer.dataGML();
 						String file = "graphs/" + method.reference.toString().replaceAll("[\\[\\]()<>:]", ".");
 						file = file.length() > 64 ? file.substring(0, 64) : file;
 						file += ".gml";
 						PrintWriter p = new PrintWriter(file);
 						p.print(gml);
 						p.flush();
-						p.close();
+						p.close();*/
 					}
 				}
 				endTime = System.currentTimeMillis();
-				System.out.println("Data analysis took " + (endTime - startTime) + " ms");
-			/*}
+				//System.out.println("Data analysis took " + (endTime - startTime) + " ms");
+			}
 		}
-		long totalEnd = System.currentTimeMillis();
-		System.out.println("Total analysis took " + (totalEnd - totalStart) + " ms");*/
+		long cumulativeEndTime = System.currentTimeMillis();
+		System.out.println("Total analysis took " + (cumulativeEndTime - cumulativeStartTime) + " ms");
 	}
 
 }

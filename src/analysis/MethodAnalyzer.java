@@ -91,6 +91,8 @@ public class MethodAnalyzer {
 	/*
 	 * TODO:
 	 * Handle back edges properly in the merging procedure
+	 * SUBROUTINES
+	 * EXCEPTION HANDLERS
 	 */
 
 	public MethodAnalyzer(JavaMethod method) {
@@ -715,7 +717,7 @@ public class MethodAnalyzer {
 			}
 			case SUBROUTINE_JUMP:
 			{
-				System.err.println("I hate subroutines");
+				//System.err.println("I hate subroutines");
 				stack.push(Value.NULL);
 				dataBlock.transition = DataTransition.fromUnconditional();
 				dataConnections.put(block, Collections.singletonMap(DataConnection.UNCONDITIONAL, basicBlocks.get((int) op.data)));
@@ -723,7 +725,7 @@ public class MethodAnalyzer {
 			}
 			case SUBROUTINE_RETURN:
 			{
-				System.err.println("I hate subroutines");
+				//System.err.println("I hate subroutines");
 				dataBlock.transition = DataTransition.fromUnconditional();
 				break;
 			}

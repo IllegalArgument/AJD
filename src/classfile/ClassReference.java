@@ -13,6 +13,14 @@ public class ClassReference {
 
 	public static final EnumSet<Primitive> INT_TYPES = EnumSet.of(Primitive.BOOLEAN, Primitive.BYTE, Primitive.CHAR, Primitive.SHORT);
 	public static final ClassReference
+	BOOLEAN = new ClassReference(Primitive.BOOLEAN, Primitive.BOOLEAN.name, 0),
+	BYTE = new ClassReference(Primitive.BYTE, Primitive.BYTE.name, 0),	
+	CHAR = new ClassReference(Primitive.CHAR, Primitive.CHAR.name, 0),
+	SHORT = new ClassReference(Primitive.SHORT, Primitive.SHORT.name, 0),
+	INT = new ClassReference(Primitive.INT, Primitive.INT.name, 0),
+	LONG = new ClassReference(Primitive.LONG, Primitive.LONG.name, 0),
+	FLOAT = new ClassReference(Primitive.FLOAT, Primitive.FLOAT.name, 0),
+	DOUBLE = new ClassReference(Primitive.DOUBLE, Primitive.DOUBLE.name, 0),
 	NULL = new ClassReference(Primitive.REFERENCE, "null", 0),
 	OBJECT = new ClassReference(Primitive.REFERENCE, "java.lang.Object", 0);
 	
@@ -91,20 +99,21 @@ public class ClassReference {
 		this.arrayDimension = arrayDimension;
 	}
 
-	/*
-	 * TODO:
-	 * Clean up this method
-	 */
 	public boolean isSubclassOf(ClassReference other) {
 		if (this.equals(other) || this.equals(NULL) || other.equals(NULL)) {
 			return true;
 		}
-		if (primitive != Primitive.REFERENCE && other.primitive != Primitive.REFERENCE) {
+		boolean isPrimitive = (primitive != Primitive.REFERENCE && other.primitive != Primitive.REFERENCE);
+		boolean isReference = (primitive == Primitive.REFERENCE && other.primitive == Primitive.REFERENCE);
+		if (isPrimitive && isReference) {
+			return false;
+		} else if (isPrimitive) {
 			if (other.primitive == Primitive.INT && INT_TYPES.contains(primitive)) {
 				return true;
+			} else {
+				return false;
 			}
-			return false;
-		} else if (primitive == Primitive.REFERENCE && other.primitive == Primitive.REFERENCE) {
+		} else if (isReference) {
 			Queue<ClassReference> tests = new LinkedList<>();
 			tests.add(this);
 			while (!tests.isEmpty()) {
@@ -132,28 +141,19 @@ public class ClassReference {
 		return false;
 	}
 
-	public ComputationalType getComputationalType() {
-		if (arrayDimension == 0) {
-			return primitive.computationalType;
-		} else {
-			return ComputationalType.REFERENCE;
-		}
-	}
-
 	public static ClassReference leastCommonSuperclass(Set<ClassReference> classes) {
-		boolean primitive = false;
-		boolean reference = false;
+		boolean isPrimitive = false;
+		boolean isReference = false;
 		for (ClassReference clazz : classes) {
 			if (clazz.getComputationalType() != ComputationalType.REFERENCE) {
-				primitive = true;
+				isPrimitive = true;
 			} else {
-				reference = true;
+				isReference = true;
 			}
 		}
-		if (primitive && reference) {
+		if (isPrimitive && isReference) {
 			return null;
-		}
-		if (primitive) {
+		} else if (isPrimitive) {
 			Set<Primitive> primitives = new HashSet<>();
 			for (ClassReference clazz : classes) {
 				primitives.add(clazz.primitive);
@@ -166,7 +166,7 @@ public class ClassReference {
 			} else {
 				return null;
 			}
-		} else if (reference) {
+		} else if (isReference) {
 			Set<ClassReference> found = new HashSet<>();
 			Set<ClassReference> tests = new HashSet<>(classes);
 			while (found.isEmpty() && !tests.isEmpty()) {
@@ -178,7 +178,7 @@ public class ClassReference {
 							isSuper = false;
 						}
 					}
-					if (isSuper) {
+					if (isSuper && !test.equals(NULL)) {
 						found.add(test);
 					}
 					JavaClass testClass = ClassStore.findClass(test);
@@ -192,7 +192,6 @@ public class ClassReference {
 				}
 				tests = newTests;
 			}
-			found.remove(NULL);
 			ClassReference result = NULL;
 			for (ClassReference candidate : found) {
 				if (candidate.isSubclassOf(result)) {
@@ -202,6 +201,14 @@ public class ClassReference {
 			return result;
 		}
 		return null;
+	}
+
+	public ComputationalType getComputationalType() {
+		if (arrayDimension == 0) {
+			return primitive.computationalType;
+		} else {
+			return ComputationalType.REFERENCE;
+		}
 	}
 
 	public static ClassReference fromConstant(String constant) {
@@ -221,7 +228,7 @@ public class ClassReference {
 		case REFERENCE:
 			return fromPrimitive(Primitive.REFERENCE);
 		case RETURN_ADDRESS:
-			throw new RuntimeException("Computational type has no class!");
+			throw new RuntimeException("Return address is evil!");
 		case LONG:
 			return fromPrimitive(Primitive.LONG);
 		case DOUBLE:
@@ -229,15 +236,32 @@ public class ClassReference {
 		case VOID:
 			return fromPrimitive(Primitive.VOID);
 		default:
-			throw new RuntimeException("Invalid computational type!");
+			return null;
 		}
 	}
 
 	public static ClassReference fromPrimitive(Primitive primitive) {
-		if (primitive == Primitive.REFERENCE) {
+		switch (primitive) {
+		case BOOLEAN:
+			return BOOLEAN;
+		case BYTE:
+			return BYTE;
+		case CHAR:
+			return CHAR;
+		case SHORT:
+			return SHORT;
+		case INT:
+			return INT;
+		case LONG:
+			return LONG;
+		case FLOAT:
+			return FLOAT;
+		case DOUBLE:
+			return DOUBLE;
+		case REFERENCE:
 			return OBJECT;
-		} else {
-			return new ClassReference(primitive, primitive.name, 0);
+		default:
+			return null;
 		}
 	}
 

@@ -30,7 +30,7 @@ public class AttributeStruct implements Struct<AttributeStruct> {
 
 	public int attributeNameIndex;
 	public int attributeLength;
-	public byte[] info;
+	public ByteBuffer info;
 
 	@Override
 	public AttributeStruct read(ByteBuffer buf) {
@@ -39,8 +39,8 @@ public class AttributeStruct implements Struct<AttributeStruct> {
 		if (attributeLength < 0) {
 			throw new ClassFormatException("Attribute length greater than Integer.MAX_VALUE!");
 		}
-		info = new byte[attributeLength];
-		buf.get(info);
+		info = buf.slice();
+		buf.position(buf.position() + attributeLength);
 		return this;
 	}
 }

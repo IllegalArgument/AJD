@@ -2,11 +2,11 @@ package classfile;
 
 import java.nio.ByteBuffer;
 
-import classfile.struct.AttributeStruct;
-import classfile.struct.FieldStruct;
 import util.BufferUtils;
 import util.PrettyPrinter;
 import util.Printable;
+import classfile.struct.AttributeStruct;
+import classfile.struct.FieldStruct;
 
 public class JavaField implements Printable {
 	
@@ -26,6 +26,7 @@ public class JavaField implements Printable {
 		ConstantEntry constantValue = null;
 		for (int i = 0; i < struct.attributesCount; i++) {
 			String attributeName = (String) enclosingClass.getConstant(struct.attributes[i].attributeNameIndex).data;
+			ByteBuffer attributeInfo = struct.attributes[i].info;
 			if (attributeName.equals(AttributeStruct.SYNTHETIC)) {
 				isSynthetic = true;
 			}
@@ -33,8 +34,7 @@ public class JavaField implements Printable {
 				isDeprecated = true;
 			}
 			if (attributeName.equals(AttributeStruct.CONSTANT_VALUE)) {
-				ByteBuffer info = ByteBuffer.wrap(struct.attributes[i].info);
-				constantValue = enclosingClass.getConstant(BufferUtils.getUnsignedShort(info));
+				constantValue = enclosingClass.getConstant(BufferUtils.getUnsignedShort(attributeInfo));
 			}
 		}
 		this.isSynthetic = isSynthetic;

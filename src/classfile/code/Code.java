@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import util.BufferUtils;
+import util.PrettyPrinter;
+import util.Printable;
 import classfile.ClassFormatException;
 import classfile.ClassReference;
 import classfile.ConstantEntry;
@@ -17,9 +20,6 @@ import classfile.JavaClass;
 import classfile.MethodReference;
 import classfile.Primitive;
 import classfile.struct.AttributeStruct;
-import util.BufferUtils;
-import util.PrettyPrinter;
-import util.Printable;
 
 public class Code implements Printable {
 
@@ -30,10 +30,7 @@ public class Code implements Printable {
 	public final List<ClassReference> exceptions;
 
 	public Code(JavaClass enclosingClass, AttributeStruct struct) {
-		if (!enclosingClass.getConstant(struct.attributeNameIndex).data.equals(AttributeStruct.CODE)) {
-			throw new ClassFormatException("Attribute name for Code attribute must be 'Code'!");
-		}
-		ByteBuffer info = ByteBuffer.wrap(struct.info);
+		ByteBuffer info = struct.info;
 		maxStack = BufferUtils.getUnsignedShort(info);
 		maxLocals = BufferUtils.getUnsignedShort(info);
 		int codeLength = info.getInt();
@@ -44,55 +41,55 @@ public class Code implements Printable {
 		int codeStart = info.position();
 		info.limit(codeStart + codeLength);
 		int pos = 0;
-		while (info.remaining() > 0) {
+		while (info.hasRemaining()) {
 			switch (BufferUtils.getUnsignedByte(info)) {
 			case NOP:
 				ops.add(new Opcode(OpType.NOOP, null));
 				break;
 			case ACONST_NULL:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, ConstantEntry.NULL));
+				ops.add(Opcode.ACONST_NULL);
 				break;
 			case ICONST_M1:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, -1)));
+				ops.add(Opcode.ICONST_M1);
 				break;
 			case ICONST_0:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, 0)));
+				ops.add(Opcode.ICONST_0);
 				break;
 			case ICONST_1:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, 1)));
+				ops.add(Opcode.ICONST_1);
 				break;
 			case ICONST_2:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, 2)));
+				ops.add(Opcode.ICONST_2);
 				break;
 			case ICONST_3:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, 3)));
+				ops.add(Opcode.ICONST_3);
 				break;
 			case ICONST_4:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, 4)));
+				ops.add(Opcode.ICONST_4);
 				break;
 			case ICONST_5:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, 5)));
+				ops.add(Opcode.ICONST_5);
 				break;
 			case LCONST_0:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.LONG, 0L)));
+				ops.add(Opcode.LCONST_0);
 				break;
 			case LCONST_1:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.LONG, 1L)));
+				ops.add(Opcode.LCONST_1);
 				break;
 			case FCONST_0:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.FLOAT, 0.0F)));
+				ops.add(Opcode.FCONST_0);
 				break;
 			case FCONST_1:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.FLOAT, 1.0F)));
+				ops.add(Opcode.FCONST_1);
 				break;
 			case FCONST_2:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.FLOAT, 2.0F)));
+				ops.add(Opcode.FCONST_2);
 				break;
 			case DCONST_0:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.DOUBLE, 0.0)));
+				ops.add(Opcode.DCONST_0);
 				break;
 			case DCONST_1:
-				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.DOUBLE, 1.0)));
+				ops.add(Opcode.DCONST_1);
 				break;
 			case BIPUSH:
 				ops.add(new Opcode(OpType.CONSTANT_LOAD, new ConstantEntry(ConstantType.INTEGER, info.get())));
@@ -125,88 +122,88 @@ public class Code implements Printable {
 				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(BufferUtils.getUnsignedByte(info), ComputationalType.REFERENCE)));
 				break;
 			case ILOAD_0:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(0, ComputationalType.INT)));
+				ops.add(Opcode.ILOAD_0);
 				break;
 			case ILOAD_1:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(1, ComputationalType.INT)));
+				ops.add(Opcode.ILOAD_1);
 				break;
 			case ILOAD_2:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(2, ComputationalType.INT)));
+				ops.add(Opcode.ILOAD_2);
 				break;
 			case ILOAD_3:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(3, ComputationalType.INT)));
+				ops.add(Opcode.ILOAD_3);
 				break;
 			case LLOAD_0:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(0, ComputationalType.LONG)));
+				ops.add(Opcode.LLOAD_0);
 				break;
 			case LLOAD_1:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(1, ComputationalType.LONG)));
+				ops.add(Opcode.LLOAD_1);
 				break;
 			case LLOAD_2:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(2, ComputationalType.LONG)));
+				ops.add(Opcode.LLOAD_2);
 				break;
 			case LLOAD_3:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(3, ComputationalType.LONG)));
+				ops.add(Opcode.LLOAD_3);
 				break;
 			case FLOAD_0:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(0, ComputationalType.FLOAT)));
+				ops.add(Opcode.FLOAD_0);
 				break;
 			case FLOAD_1:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(1, ComputationalType.FLOAT)));
+				ops.add(Opcode.FLOAD_1);
 				break;
 			case FLOAD_2:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(2, ComputationalType.FLOAT)));
+				ops.add(Opcode.FLOAD_2);
 				break;
 			case FLOAD_3:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(3, ComputationalType.FLOAT)));
+				ops.add(Opcode.FLOAD_3);
 				break;
 			case DLOAD_0:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(0, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DLOAD_0);
 				break;
 			case DLOAD_1:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(1, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DLOAD_1);
 				break;
 			case DLOAD_2:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(2, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DLOAD_2);
 				break;
 			case DLOAD_3:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(3, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DLOAD_3);
 				break;
 			case ALOAD_0:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(0, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ALOAD_0);
 				break;
 			case ALOAD_1:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(1, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ALOAD_1);
 				break;
 			case ALOAD_2:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(2, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ALOAD_2);
 				break;
 			case ALOAD_3:
-				ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(3, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ALOAD_3);
 				break;
 			case IALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.INT));
+				ops.add(Opcode.IALOAD);
 				break;
 			case LALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.LONG));
+				ops.add(Opcode.LALOAD);
 				break;
 			case FALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.FLOAT));
+				ops.add(Opcode.FALOAD);
 				break;
 			case DALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.DOUBLE));
+				ops.add(Opcode.DALOAD);
 				break;
 			case AALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.REFERENCE));
+				ops.add(Opcode.AALOAD);
 				break;
 			case BALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.BYTE));
+				ops.add(Opcode.BALOAD);
 				break;
 			case CALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.CHAR));
+				ops.add(Opcode.CALOAD);
 				break;
 			case SALOAD:
-				ops.add(new Opcode(OpType.ARRAY_LOAD, Primitive.SHORT));
+				ops.add(Opcode.SALOAD);
 				break;
 			case ISTORE:
 				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(BufferUtils.getUnsignedByte(info), ComputationalType.INT)));
@@ -224,286 +221,286 @@ public class Code implements Printable {
 				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(BufferUtils.getUnsignedByte(info), ComputationalType.REFERENCE)));
 				break;
 			case ISTORE_0:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(0, ComputationalType.INT)));
+				ops.add(Opcode.ISTORE_0);
 				break;
 			case ISTORE_1:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(1, ComputationalType.INT)));
+				ops.add(Opcode.ISTORE_1);
 				break;
 			case ISTORE_2:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(2, ComputationalType.INT)));
+				ops.add(Opcode.ISTORE_2);
 				break;
 			case ISTORE_3:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(3, ComputationalType.INT)));
+				ops.add(Opcode.ISTORE_3);
 				break;
 			case LSTORE_0:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(0, ComputationalType.LONG)));
+				ops.add(Opcode.LSTORE_0);
 				break;
 			case LSTORE_1:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(1, ComputationalType.LONG)));
+				ops.add(Opcode.LSTORE_1);
 				break;
 			case LSTORE_2:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(2, ComputationalType.LONG)));
+				ops.add(Opcode.LSTORE_2);
 				break;
 			case LSTORE_3:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(3, ComputationalType.LONG)));
+				ops.add(Opcode.LSTORE_3);
 				break;
 			case FSTORE_0:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(0, ComputationalType.FLOAT)));
+				ops.add(Opcode.FSTORE_0);
 				break;
 			case FSTORE_1:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(1, ComputationalType.FLOAT)));
+				ops.add(Opcode.FSTORE_1);
 				break;
 			case FSTORE_2:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(2, ComputationalType.FLOAT)));
+				ops.add(Opcode.FSTORE_2);
 				break;
 			case FSTORE_3:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(3, ComputationalType.FLOAT)));
+				ops.add(Opcode.FSTORE_3);
 				break;
 			case DSTORE_0:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(0, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DSTORE_0);
 				break;
 			case DSTORE_1:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(1, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DSTORE_1);
 				break;
 			case DSTORE_2:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(2, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DSTORE_2);
 				break;
 			case DSTORE_3:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(3, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DSTORE_3);
 				break;
 			case ASTORE_0:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(0, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ASTORE_0);
 				break;
 			case ASTORE_1:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(1, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ASTORE_1);
 				break;
 			case ASTORE_2:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(2, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ASTORE_2);
 				break;
 			case ASTORE_3:
-				ops.add(new Opcode(OpType.LOCAL_STORE, new LocalVariable(3, ComputationalType.REFERENCE)));
+				ops.add(Opcode.ASTORE_3);
 				break;
 			case IASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.INT));
+				ops.add(Opcode.IASTORE);
 				break;
 			case LASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.LONG));
+				ops.add(Opcode.LASTORE);
 				break;
 			case FASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.FLOAT));
+				ops.add(Opcode.FASTORE);
 				break;
 			case DASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.DOUBLE));
+				ops.add(Opcode.DASTORE);
 				break;
 			case AASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.REFERENCE));
+				ops.add(Opcode.AASTORE);
 				break;
 			case BASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.BYTE));
+				ops.add(Opcode.BASTORE);
 				break;
 			case CASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.CHAR));
+				ops.add(Opcode.CASTORE);
 				break;
 			case SASTORE:
-				ops.add(new Opcode(OpType.ARRAY_STORE, Primitive.SHORT));
+				ops.add(Opcode.SASTORE);
 				break;
 			case POP:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.POP));
+				ops.add(Opcode.POP);
 				break;
 			case POP2:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.POP2));
+				ops.add(Opcode.POP2);
 				break;
 			case DUP:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.DUP));
+				ops.add(Opcode.DUP);
 				break;
 			case DUP_X1:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.DUP_X1));
+				ops.add(Opcode.DUP_X1);
 				break;
 			case DUP_X2:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.DUP_X2));
+				ops.add(Opcode.DUP_X2);
 				break;
 			case DUP2:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.DUP2));
+				ops.add(Opcode.DUP2);
 				break;
 			case DUP2_X1:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.DUP2_X1));
+				ops.add(Opcode.DUP2_X1);
 				break;
 			case DUP2_X2:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.DUP2_X2));
+				ops.add(Opcode.DUP2_X2);
 				break;
 			case SWAP:
-				ops.add(new Opcode(OpType.STACK_MANAGE, StackManagement.SWAP));
+				ops.add(Opcode.SWAP);
 				break;
 			case IADD:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.ADD, ComputationalType.INT)));
+				ops.add(Opcode.IADD);
 				break;
 			case LADD:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.ADD, ComputationalType.LONG)));
+				ops.add(Opcode.LADD);
 				break;
 			case FADD:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.ADD, ComputationalType.FLOAT)));
+				ops.add(Opcode.FADD);
 				break;
 			case DADD:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.ADD, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DADD);
 				break;
 			case ISUB:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.SUBTRACT, ComputationalType.INT)));
+				ops.add(Opcode.ISUB);
 				break;
 			case LSUB:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.SUBTRACT, ComputationalType.LONG)));
+				ops.add(Opcode.LSUB);
 				break;
 			case FSUB:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.SUBTRACT, ComputationalType.FLOAT)));
+				ops.add(Opcode.FSUB);
 				break;
 			case DSUB:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.SUBTRACT, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DSUB);
 				break;
 			case IMUL:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.MULTIPLY, ComputationalType.INT)));
+				ops.add(Opcode.IMUL);
 				break;
 			case LMUL:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.MULTIPLY, ComputationalType.LONG)));
+				ops.add(Opcode.LMUL);
 				break;
 			case FMUL:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.MULTIPLY, ComputationalType.FLOAT)));
+				ops.add(Opcode.FMUL);
 				break;
 			case DMUL:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.MULTIPLY, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DMUL);
 				break;
 			case IDIV:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.DIVIDE, ComputationalType.INT)));
+				ops.add(Opcode.IDIV);
 				break;
 			case LDIV:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.DIVIDE, ComputationalType.LONG)));
+				ops.add(Opcode.LDIV);
 				break;
 			case FDIV:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.DIVIDE, ComputationalType.FLOAT)));
+				ops.add(Opcode.FDIV);
 				break;
 			case DDIV:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.DIVIDE, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DDIV);
 				break;
 			case IREM:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.REMAINDER, ComputationalType.INT)));
+				ops.add(Opcode.IREM);
 				break;
 			case LREM:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.REMAINDER, ComputationalType.LONG)));
+				ops.add(Opcode.LREM);
 				break;
 			case FREM:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.REMAINDER, ComputationalType.FLOAT)));
+				ops.add(Opcode.FREM);
 				break;
 			case DREM:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.REMAINDER, ComputationalType.DOUBLE)));
+				ops.add(Opcode.DREM);
 				break;
 			case INEG:
-				ops.add(new Opcode(OpType.NEGATE, ComputationalType.INT));
+				ops.add(Opcode.INEG);
 				break;
 			case LNEG:
-				ops.add(new Opcode(OpType.NEGATE, ComputationalType.LONG));
+				ops.add(Opcode.LNEG);
 				break;
 			case FNEG:
-				ops.add(new Opcode(OpType.NEGATE, ComputationalType.FLOAT));
+				ops.add(Opcode.FNEG);
 				break;
 			case DNEG:
-				ops.add(new Opcode(OpType.NEGATE, ComputationalType.DOUBLE));
+				ops.add(Opcode.DNEG);
 				break;
 			case ISHL:
-				ops.add(new Opcode(OpType.SHIFT, new Shift(ShiftType.SHIFT_LEFT, ComputationalType.INT)));
+				ops.add(Opcode.ISHL);
 				break;
 			case LSHL:
-				ops.add(new Opcode(OpType.SHIFT, new Shift(ShiftType.SHIFT_LEFT, ComputationalType.LONG)));
+				ops.add(Opcode.LSHL);
 				break;
 			case ISHR:
-				ops.add(new Opcode(OpType.SHIFT, new Shift(ShiftType.SHIFT_RIGHT, ComputationalType.INT)));
+				ops.add(Opcode.ISHR);
 				break;
 			case LSHR:
-				ops.add(new Opcode(OpType.SHIFT, new Shift(ShiftType.SHIFT_RIGHT, ComputationalType.LONG)));
+				ops.add(Opcode.LSHR);
 				break;
 			case IUSHR:
-				ops.add(new Opcode(OpType.SHIFT, new Shift(ShiftType.LOGICAL_SHIFT_RIGHT, ComputationalType.INT)));
+				ops.add(Opcode.IUSHR);
 				break;
 			case LUSHR:
-				ops.add(new Opcode(OpType.SHIFT, new Shift(ShiftType.LOGICAL_SHIFT_RIGHT, ComputationalType.LONG)));
+				ops.add(Opcode.LUSHR);
 				break;
 			case IAND:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.AND, ComputationalType.INT)));
+				ops.add(Opcode.IAND);
 				break;
 			case LAND:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.AND, ComputationalType.LONG)));
+				ops.add(Opcode.LAND);
 				break;
 			case IOR:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.OR, ComputationalType.INT)));
+				ops.add(Opcode.IOR);
 				break;
 			case LOR:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.OR, ComputationalType.LONG)));
+				ops.add(Opcode.LOR);
 				break;
 			case IXOR:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.XOR, ComputationalType.INT)));
+				ops.add(Opcode.IXOR);
 				break;
 			case LXOR:
-				ops.add(new Opcode(OpType.ARITHMETIC, new Arithmetic(ArithmeticType.XOR, ComputationalType.LONG)));
+				ops.add(Opcode.LXOR);
 				break;
 			case IINC:
 				ops.add(new Opcode(OpType.LOCAL_INCREMENT, new LocalVariableIncrement(new LocalVariable(BufferUtils.getUnsignedByte(info), ComputationalType.INT), info.get())));
 				break;
 			case I2L:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.INT, Primitive.LONG)));
+				ops.add(Opcode.I2L);
 				break;
 			case I2F:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.INT, Primitive.FLOAT)));
+				ops.add(Opcode.I2F);
 				break;
 			case I2D:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.INT, Primitive.DOUBLE)));
+				ops.add(Opcode.I2D);
 				break;
 			case L2I:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.LONG, Primitive.INT)));
+				ops.add(Opcode.L2I);
 				break;
 			case L2F:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.LONG, Primitive.FLOAT)));
+				ops.add(Opcode.L2F);
 				break;
 			case L2D:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.LONG, Primitive.DOUBLE)));
+				ops.add(Opcode.L2D);
 				break;
 			case F2I:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.FLOAT, Primitive.INT)));
+				ops.add(Opcode.F2I);
 				break;
 			case F2L:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.FLOAT, Primitive.LONG)));
+				ops.add(Opcode.F2L);
 				break;
 			case F2D:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.FLOAT, Primitive.DOUBLE)));
+				ops.add(Opcode.F2D);
 				break;
 			case D2I:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.DOUBLE, Primitive.INT)));
+				ops.add(Opcode.D2I);
 				break;
 			case D2L:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.DOUBLE, Primitive.LONG)));
+				ops.add(Opcode.D2L);
 				break;
 			case D2F:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.DOUBLE, Primitive.FLOAT)));
+				ops.add(Opcode.D2F);
 				break;
 			case I2B:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.INT, Primitive.BYTE)));
+				ops.add(Opcode.I2B);
 				break;
 			case I2C:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.INT, Primitive.CHAR)));
+				ops.add(Opcode.I2C);
 				break;
 			case I2S:
-				ops.add(new Opcode(OpType.CONVERT, new Conversion(Primitive.INT, Primitive.SHORT)));
+				ops.add(Opcode.I2S);
 				break;
 			case LCMP:
-				ops.add(new Opcode(OpType.COMPARE, new Comparison(ComputationalType.LONG, CompareOption.NORMAL)));
+				ops.add(Opcode.LCMP);
 				break;
 			case FCMPL:
-				ops.add(new Opcode(OpType.COMPARE, new Comparison(ComputationalType.FLOAT, CompareOption.LESS_DEFAULT)));
+				ops.add(Opcode.FCMPL);
 				break;
 			case FCMPG:
-				ops.add(new Opcode(OpType.COMPARE, new Comparison(ComputationalType.FLOAT, CompareOption.GREATER_DEFAULT)));
+				ops.add(Opcode.FCMPG);
 				break;
 			case DCMPL:
-				ops.add(new Opcode(OpType.COMPARE, new Comparison(ComputationalType.DOUBLE, CompareOption.LESS_DEFAULT)));
+				ops.add(Opcode.DCMPL);
 				break;
 			case DCMPG:
-				ops.add(new Opcode(OpType.COMPARE, new Comparison(ComputationalType.DOUBLE, CompareOption.GREATER_DEFAULT)));
+				ops.add(Opcode.DCMPG);
 				break;
 			case IFEQ:
 				ops.add(new Opcode(OpType.CONDITIONAL_JUMP, new ConditionalJump(JumpCondition.EQUAL_ZERO, ComputationalType.INT, pos + info.getShort())));
@@ -584,22 +581,22 @@ public class Code implements Printable {
 				break;
 			}
 			case IRETURN:
-				ops.add(new Opcode(OpType.RETURN, ComputationalType.INT));
+				ops.add(Opcode.IRETURN);
 				break;
 			case LRETURN:
-				ops.add(new Opcode(OpType.RETURN, ComputationalType.LONG));
+				ops.add(Opcode.LRETURN);
 				break;
 			case FRETURN:
-				ops.add(new Opcode(OpType.RETURN, ComputationalType.FLOAT));
+				ops.add(Opcode.FRETURN);
 				break;
 			case DRETURN:
-				ops.add(new Opcode(OpType.RETURN, ComputationalType.DOUBLE));
+				ops.add(Opcode.DRETURN);
 				break;
 			case ARETURN:
-				ops.add(new Opcode(OpType.RETURN, ComputationalType.REFERENCE));
+				ops.add(Opcode.ARETURN);
 				break;
 			case RETURN:
-				ops.add(new Opcode(OpType.RETURN, ComputationalType.VOID));
+				ops.add(Opcode.RETURN);
 				break;
 			case GETSTATIC:
 				ops.add(new Opcode(OpType.FIELD_LOAD, new FieldAccessor((FieldReference) enclosingClass.getConstant(BufferUtils.getUnsignedShort(info)).data, true)));
@@ -667,10 +664,10 @@ public class Code implements Printable {
 				ops.add(new Opcode(OpType.NEW_ARRAY, new ArrayInstantiation(ClassReference.arrayFromElementType((ClassReference) enclosingClass.getConstant(BufferUtils.getUnsignedShort(info)).data), 1)));
 				break;
 			case ARRAYLENGTH:
-				ops.add(new Opcode(OpType.ARRAY_LENGTH, null));
+				ops.add(Opcode.ARRAYLENGTH);
 				break;
 			case ATHROW:
-				ops.add(new Opcode(OpType.THROW, null));
+				ops.add(Opcode.ATHROW);
 				break;
 			case CHECKCAST:
 				ops.add(new Opcode(OpType.CAST, (ClassReference) enclosingClass.getConstant(BufferUtils.getUnsignedShort(info)).data));
@@ -679,10 +676,10 @@ public class Code implements Printable {
 				ops.add(new Opcode(OpType.INSTANCE_OF, (ClassReference) enclosingClass.getConstant(BufferUtils.getUnsignedShort(info)).data));
 				break;
 			case MONITORENTER:
-				ops.add(new Opcode(OpType.SYNCHRONIZE, true));
+				ops.add(Opcode.MONITORENTER);
 				break;
 			case MONITOREXIT:
-				ops.add(new Opcode(OpType.SYNCHRONIZE, false));
+				ops.add(Opcode.MONITOREXIT);
 				break;
 			case WIDE:
 			{
@@ -767,7 +764,7 @@ public class Code implements Printable {
 			AttributeStruct attribute = new AttributeStruct().read(info);
 			String attributeName = (String) enclosingClass.getConstant(attribute.attributeNameIndex).data;
 			if (attributeName.equals(AttributeStruct.EXCEPTIONS)) {
-				ByteBuffer attributeInfo = ByteBuffer.wrap(attribute.info);
+				ByteBuffer attributeInfo = attribute.info;
 				int numberOfExceptions = BufferUtils.getUnsignedShort(attributeInfo);
 				for (int j = 0; j < numberOfExceptions; j++) {
 					exceptions.add((ClassReference) enclosingClass.getConstant(BufferUtils.getUnsignedShort(attributeInfo)).data);
@@ -776,7 +773,7 @@ public class Code implements Printable {
 		}
 		this.exceptions = Collections.unmodifiableList(exceptions);
 	}
-	
+
 	@Override
 	public void printOn(PrettyPrinter p) {
 		p.println("Code [")

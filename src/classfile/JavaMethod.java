@@ -1,10 +1,10 @@
 package classfile;
 
+import util.PrettyPrinter;
+import util.Printable;
 import classfile.code.Code;
 import classfile.struct.AttributeStruct;
 import classfile.struct.MethodStruct;
-import util.PrettyPrinter;
-import util.Printable;
 
 public class JavaMethod implements Printable {
 	
@@ -23,7 +23,8 @@ public class JavaMethod implements Printable {
 		boolean isDeprecated = false;
 		Code code = null;
 		for (int i = 0; i < struct.attributesCount; i++) {
-			String attributeName = (String) enclosingClass.getConstant(struct.attributes[i].attributeNameIndex).data;
+			AttributeStruct attribute = struct.attributes[i];
+			String attributeName = (String) enclosingClass.getConstant(attribute.attributeNameIndex).data;
 			if (attributeName.equals(AttributeStruct.SYNTHETIC)) {
 				isSynthetic = true;
 			}
@@ -31,7 +32,7 @@ public class JavaMethod implements Printable {
 				isDeprecated = true;
 			}
 			if (attributeName.equals(AttributeStruct.CODE)) {
-				code = new Code(enclosingClass, struct.attributes[i]);
+				code = new Code(enclosingClass, attribute);
 			}
 		}
 		this.isSynthetic = isSynthetic;

@@ -1,8 +1,5 @@
 package classfile;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -10,11 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import classfile.struct.ClassStruct;
-import classfile.struct.ConstantEntryStruct;
 import util.BufferUtils;
 import util.PrettyPrinter;
 import util.Printable;
+import classfile.struct.ClassStruct;
+import classfile.struct.ConstantEntryStruct;
 
 public class JavaClass implements Printable {
 	
@@ -68,7 +65,7 @@ public class JavaClass implements Printable {
 	private ConstantEntry createConstantEntry(int index, ConstantEntryStruct[] pool) {
 		if (constantPool[index] == null) {
 			ConstantEntryStruct struct = pool[index];
-			ByteBuffer info = ByteBuffer.wrap(struct.info);
+			ByteBuffer info = struct.info;
 			switch (struct.tag) {
 			case ConstantEntryStruct.CLASS:
 				constantPool[index] = new ConstantEntry(ConstantType.CLASS,
@@ -94,20 +91,16 @@ public class JavaClass implements Printable {
 						(String) createConstantEntry(BufferUtils.getUnsignedShort(info), pool).data);
 				break;
 			case ConstantEntryStruct.INTEGER:
-				constantPool[index] = new ConstantEntry(ConstantType.INTEGER,
-						info.getInt());
+				constantPool[index] = new ConstantEntry(ConstantType.INTEGER, info.getInt());
 				break;
 			case ConstantEntryStruct.FLOAT:
-				constantPool[index] = new ConstantEntry(ConstantType.FLOAT,
-						info.getFloat());
+				constantPool[index] = new ConstantEntry(ConstantType.FLOAT, info.getFloat());
 				break;
 			case ConstantEntryStruct.LONG:
-				constantPool[index] = new ConstantEntry(ConstantType.LONG,
-						info.getLong());
+				constantPool[index] = new ConstantEntry(ConstantType.LONG, info.getLong());
 				break;
 			case ConstantEntryStruct.DOUBLE:
-				constantPool[index] = new ConstantEntry(ConstantType.DOUBLE,
-						info.getDouble());
+				constantPool[index] = new ConstantEntry(ConstantType.DOUBLE, info.getDouble());
 				break;
 			case ConstantEntryStruct.NAME_AND_TYPE:
 				constantPool[index] = new ConstantEntry(ConstantType.NAME_AND_TYPE,
@@ -115,16 +108,7 @@ public class JavaClass implements Printable {
 								(String) createConstantEntry(BufferUtils.getUnsignedShort(info), pool).data));
 				break;
 			case ConstantEntryStruct.UTF8:
-				info.mark();
-				byte[] data = new byte[BufferUtils.getUnsignedShort(info) + 2];
-				info.reset();
-				info.get(data);
-				try {
-					constantPool[index] = new ConstantEntry(ConstantType.UTF8,
-							new DataInputStream(new ByteArrayInputStream(data)).readUTF());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				constantPool[index] = new ConstantEntry(ConstantType.UTF8, BufferUtils.getModifiedUTF8(info));
 				break;
 			}
 		}
