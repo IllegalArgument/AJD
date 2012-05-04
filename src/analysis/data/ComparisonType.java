@@ -1,7 +1,7 @@
 package analysis.data;
 
-import classfile.code.CompareCondition;
-import classfile.code.JumpCondition;
+import classfile.code.opcodes.CompareCondition;
+import classfile.code.opcodes.JumpCondition;
 
 public enum ComparisonType {
 	

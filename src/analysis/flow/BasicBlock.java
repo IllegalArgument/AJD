@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import classfile.code.Opcode;
+import classfile.code.opcodes.Opcode;
 
 public class BasicBlock {
 	

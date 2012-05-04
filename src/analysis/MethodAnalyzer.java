@@ -1,7 +1,6 @@
 package analysis;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -17,6 +16,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import util.PrettyPrinter;
 import analysis.data.ArrayAccess;
 import analysis.data.Assignment;
 import analysis.data.BinaryArithmetic;
@@ -42,27 +42,26 @@ import classfile.ConstantType;
 import classfile.JavaMethod;
 import classfile.MethodReference;
 import classfile.Primitive;
-import classfile.code.Arithmetic;
-import classfile.code.ArithmeticType;
-import classfile.code.ArrayInstantiation;
 import classfile.code.Code;
-import classfile.code.CompareJump;
-import classfile.code.Comparison;
-import classfile.code.ComputationalType;
-import classfile.code.ConditionalJump;
-import classfile.code.Conversion;
-import classfile.code.ExceptionHandler;
-import classfile.code.FieldAccessor;
-import classfile.code.JumpCondition;
-import classfile.code.LocalVariable;
-import classfile.code.LocalVariableIncrement;
-import classfile.code.MethodInvocation;
-import classfile.code.MethodType;
-import classfile.code.Opcode;
-import classfile.code.Shift;
-import classfile.code.StackManagement;
-import classfile.code.Switch;
-import util.PrettyPrinter;
+import classfile.code.opcodes.Arithmetic;
+import classfile.code.opcodes.ArithmeticType;
+import classfile.code.opcodes.ArrayInstantiation;
+import classfile.code.opcodes.CompareJump;
+import classfile.code.opcodes.Comparison;
+import classfile.code.opcodes.ComputationalType;
+import classfile.code.opcodes.ConditionalJump;
+import classfile.code.opcodes.Conversion;
+import classfile.code.opcodes.ExceptionHandler;
+import classfile.code.opcodes.FieldAccessor;
+import classfile.code.opcodes.JumpCondition;
+import classfile.code.opcodes.LocalVariable;
+import classfile.code.opcodes.LocalVariableIncrement;
+import classfile.code.opcodes.MethodInvocation;
+import classfile.code.opcodes.MethodType;
+import classfile.code.opcodes.Opcode;
+import classfile.code.opcodes.Shift;
+import classfile.code.opcodes.StackManagement;
+import classfile.code.opcodes.Switch;
 
 public class MethodAnalyzer {
 
@@ -76,9 +75,9 @@ public class MethodAnalyzer {
 
 	private Queue<BasicBlock> visitQueue = new LinkedList<>();
 	private Map<BasicBlock, Map<DataBlock, Deque<Value>>> stackDefinitions = new HashMap<>();
-	private Map<BasicBlock, Map<DataBlock, Value[]>> localDefinitions = new HashMap<>();
+	private Map<BasicBlock, Map<DataBlock, List<Value>>> localDefinitions = new HashMap<>();
 	private Deque<Value> stack;
-	private Value[] locals;
+	private List<Value> locals;
 	private int localsCount;
 	private int dupCount = 0;
 
@@ -91,6 +90,7 @@ public class MethodAnalyzer {
 	/*
 	 * TODO:
 	 * Handle back edges properly in the merging procedure
+	 * Use StackMapTable instead of inferring
 	 * SUBROUTINES
 	 * EXCEPTION HANDLERS
 	 */
@@ -307,24 +307,28 @@ public class MethodAnalyzer {
 	private void createDataBlocks() {
 		for (BasicBlock block : basicBlocks.values()) {
 			stackDefinitions.put(block, new HashMap<DataBlock, Deque<Value>>());
-			localDefinitions.put(block, new HashMap<DataBlock, Value[]>());
+			localDefinitions.put(block, new HashMap<DataBlock, List<Value>>());
 		}
 
 		MethodReference methodReference = method.reference;
 		Deque<Value> startStack = new LinkedList<>();
 		stackDefinitions.get(startBasicBlock).put(null, startStack);
 		localsCount = code.maxLocals;
-		Value[] arguments = new Value[localsCount];
-		int localIndex = 0;
+		List<Value> arguments = new ArrayList<Value>(localsCount);
 		if (!method.flags.isStatic) {
-			arguments[localIndex++] = new Value(ValueType.THIS, 0, methodReference.enclosingClass);
+			arguments.add(new Value(ValueType.THIS, 0, methodReference.enclosingClass));
 		}
 		List<ClassReference> argumentTypes = methodReference.argTypes;
 		int argumentCount = argumentTypes.size();
 		for (int argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++) {
 			ClassReference argumentType = argumentTypes.get(argumentIndex);
-			arguments[localIndex] = new Value(ValueType.ARGUMENT, argumentIndex, argumentType);
-			localIndex += argumentType.getComputationalType().category;
+			arguments.add(new Value(ValueType.ARGUMENT, argumentIndex, argumentType));
+			if (argumentType.getComputationalType().category == 2) {
+				arguments.add(null);
+			}
+		}
+		for (int i = arguments.size(); i < localsCount; i++) {
+			arguments.add(null);
 		}
 		localDefinitions.get(startBasicBlock).put(null, arguments);
 
@@ -356,7 +360,7 @@ public class MethodAnalyzer {
 				}
 			}
 			stack = new LinkedList<>(mergeStacks(stackDefinitions.get(block)));
-			locals = Arrays.copyOf(mergeLocals(localDefinitions.get(block)), localsCount);
+			locals = new ArrayList<>(mergeLocals(localDefinitions.get(block)));
 			DataBlock dataBlock = createDataBlock(block);
 			dataBlockMap.put(block, dataBlock);
 			for (Map.Entry<BasicBlock, Boolean> successorEntry : block.forwardEdges.entrySet()) {
@@ -395,7 +399,7 @@ public class MethodAnalyzer {
 				if (local.type.category == 2) {
 					stack.push(null);
 				}
-				stack.push(locals[localIndex]);
+				stack.push(locals.get(localIndex));
 				break;
 			}
 			case ARRAY_LOAD:
@@ -419,7 +423,7 @@ public class MethodAnalyzer {
 					stack.pop();
 				}
 				Value localTarget = new Value(ValueType.LOCAL, localIndex, localClass);
-				locals[localIndex] = localTarget;
+				locals.set(localIndex, localTarget);
 				dataBlock.assignments.add(new Assignment(localTarget, localValue));
 				break;
 			}
@@ -918,22 +922,23 @@ public class MethodAnalyzer {
 		}
 	}
 
-	private Value[] mergeLocals(Map<DataBlock, Value[]> localsMap) {
+	private List<Value> mergeLocals(Map<DataBlock, List<Value>> localsMap) {
 		int localSetsCount = localsMap.size();
 		if (localSetsCount == 1) {
 			return localsMap.values().iterator().next();
 		} else {
-			Value[] merged = new Value[localsCount];
+			List<Value> merged = new ArrayList<>(localsCount);
 			List<Map<DataBlock, Value>> localValues = new ArrayList<>(localsCount);
 			List<Set<ClassReference>> localClasses = new ArrayList<>(localsCount);
 			for (int i = 0; i < localsCount; i++) {
+				merged.add(null);
 				localValues.add(new HashMap<DataBlock, Value>());
 				localClasses.add(new HashSet<ClassReference>());
 			}
-			for (Map.Entry<DataBlock, Value[]> localsEntry : localsMap.entrySet()) {
-				Value[] values = localsEntry.getValue();
+			for (Map.Entry<DataBlock, List<Value>> localsEntry : localsMap.entrySet()) {
+				List<Value> values = localsEntry.getValue();
 				for (int localIndex = 0; localIndex < localsCount; localIndex++) {
-					Value localValue = values[localIndex];
+					Value localValue = values.get(localIndex);
 					Set<ClassReference> classes = localClasses.get(localIndex);
 					if (localValue != null) {
 						localValues.get(localIndex).put(localsEntry.getKey(), localValue);
@@ -950,7 +955,7 @@ public class MethodAnalyzer {
 				Map<DataBlock, Value> values = localValues.get(localIndex);
 				if (new HashSet<>(values.values()).size() == 1) {
 					Value localValue = values.values().iterator().next();
-					merged[localIndex] = localValue;
+					merged.set(localIndex, localValue);
 					if (localValue.classType.getComputationalType().category == 2) {
 						localIndex++;
 					}
@@ -958,7 +963,7 @@ public class MethodAnalyzer {
 					if (!values.isEmpty()) {
 						ClassReference localClass = ClassReference.leastCommonSuperclass(classes);
 						if (localClass != null) {
-							merged[localIndex] = new Value(ValueType.LOCAL, localIndex, localClass);
+							merged.set(localIndex, new Value(ValueType.LOCAL, localIndex, localClass));
 							if (localClass.getComputationalType().category == 2) {
 								localIndex++;
 							}

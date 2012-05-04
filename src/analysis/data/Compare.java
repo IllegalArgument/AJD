@@ -1,6 +1,6 @@
 package analysis.data;
 
-import classfile.code.CompareOption;
+import classfile.code.opcodes.CompareOption;
 
 public class Compare {
 	

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import classfile.code.MethodInvocation;
+import classfile.code.opcodes.MethodInvocation;
 
 public class MethodCall {
 	

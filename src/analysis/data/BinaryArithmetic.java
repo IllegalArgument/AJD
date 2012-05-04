@@ -1,6 +1,6 @@
 package analysis.data;
 
-import classfile.code.ArithmeticType;
+import classfile.code.opcodes.ArithmeticType;
 
 public class BinaryArithmetic {
 	

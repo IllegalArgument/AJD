@@ -94,7 +94,7 @@ public class ClassStore {
 
 	public static void main(String[] args) throws Exception {
 		long startTime = System.currentTimeMillis();
-		Path rs = FileSystems.getDefault().getPath("jars/rs.jar");
+		Path rs = FileSystems.getDefault().getPath("jars/rs_optimus.jar");
 		Path allatori = FileSystems.getDefault().getPath("jars/allatori.jar");
 		Path rt = FileSystems.getDefault().getPath("jars/rt.jar");
 		addSearchPath(rs);
@@ -102,19 +102,15 @@ public class ClassStore {
 		addSearchPath(rt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("Adding paths took " + (endTime - startTime) + " ms");
-		long cumulativeStartTime = System.currentTimeMillis();
-		for (Set<Path> pathSet : paths.values()) {
-			for (Path path : pathSet) {
-				startTime = System.currentTimeMillis();
-				JavaClass clazz = loadClass(path);
-				//System.out.println(clazz.thisType);
-				endTime = System.currentTimeMillis();
-				//System.out.println("Class load took " + (endTime - startTime) + " ms");
-				startTime = System.currentTimeMillis();
+		startTime = System.currentTimeMillis();
+		/*for (Set<Path> pathSet : paths.values()) {
+			for (Path path : pathSet) {*/
+				JavaClass clazz = findClass("client");
+				//System.out.println(new PrettyPrinter().print(clazz));
 				for (JavaMethod method : clazz.methods.values()) {
 					if (method.code != null) {
 						//System.out.println(method.reference);
-						new MethodAnalyzer(method);
+						MethodAnalyzer analyzer = new MethodAnalyzer(method);
 						/*String gml = analyzer.dataGML();
 						String file = "graphs/" + method.reference.toString().replaceAll("[\\[\\]()<>:]", ".");
 						file = file.length() > 64 ? file.substring(0, 64) : file;
@@ -125,12 +121,10 @@ public class ClassStore {
 						p.close();*/
 					}
 				}
-				endTime = System.currentTimeMillis();
-				//System.out.println("Data analysis took " + (endTime - startTime) + " ms");
-			}
-		}
-		long cumulativeEndTime = System.currentTimeMillis();
-		System.out.println("Total analysis took " + (cumulativeEndTime - cumulativeStartTime) + " ms");
+		/*	}
+		}*/
+		endTime = System.currentTimeMillis();
+		System.out.println("Total analysis took " + (endTime - startTime) + " ms");
 	}
 
 }

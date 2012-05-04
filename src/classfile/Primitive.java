@@ -1,6 +1,6 @@
 package classfile;
 
-import classfile.code.ComputationalType;
+import classfile.code.opcodes.ComputationalType;
 
 public enum Primitive {
 	

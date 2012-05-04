@@ -25,14 +25,16 @@ public class JavaMethod implements Printable {
 		for (int i = 0; i < struct.attributesCount; i++) {
 			AttributeStruct attribute = struct.attributes[i];
 			String attributeName = (String) enclosingClass.getConstant(attribute.attributeNameIndex).data;
-			if (attributeName.equals(AttributeStruct.SYNTHETIC)) {
+			switch (attributeName) {
+			case AttributeStruct.SYNTHETIC:
 				isSynthetic = true;
-			}
-			if (attributeName.equals(AttributeStruct.DEPRECATED)) {
+				break;
+			case AttributeStruct.DEPRECATED:
 				isDeprecated = true;
-			}
-			if (attributeName.equals(AttributeStruct.CODE)) {
+				break;
+			case AttributeStruct.CODE:
 				code = new Code(enclosingClass, attribute);
+				break;
 			}
 		}
 		this.isSynthetic = isSynthetic;

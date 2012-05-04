@@ -1,6 +1,6 @@
 package analysis.data;
 
-import classfile.code.FieldAccessor;
+import classfile.code.opcodes.FieldAccessor;
 
 public class FieldAccess {
 	

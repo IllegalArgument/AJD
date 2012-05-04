@@ -19,6 +19,22 @@ import classfile.FieldReference;
 import classfile.JavaClass;
 import classfile.MethodReference;
 import classfile.Primitive;
+import classfile.code.opcodes.ArrayInstantiation;
+import classfile.code.opcodes.CompareCondition;
+import classfile.code.opcodes.CompareJump;
+import classfile.code.opcodes.ComputationalType;
+import classfile.code.opcodes.ConditionalJump;
+import classfile.code.opcodes.ExceptionHandler;
+import classfile.code.opcodes.FieldAccessor;
+import classfile.code.opcodes.JumpCondition;
+import classfile.code.opcodes.LocalVariable;
+import classfile.code.opcodes.LocalVariableIncrement;
+import classfile.code.opcodes.MethodInvocation;
+import classfile.code.opcodes.MethodType;
+import classfile.code.opcodes.OpType;
+import classfile.code.opcodes.Opcode;
+import classfile.code.opcodes.Switch;
+import classfile.code.stackmap.StackMapTable;
 import classfile.struct.AttributeStruct;
 
 public class Code implements Printable {
@@ -28,6 +44,7 @@ public class Code implements Printable {
 	public final List<Opcode> ops;
 	public final List<ExceptionHandler> exceptionTable;
 	public final List<ClassReference> exceptions;
+	public final StackMapTable stackMapTable;
 
 	public Code(JavaClass enclosingClass, AttributeStruct struct) {
 		ByteBuffer info = struct.info;
@@ -758,19 +775,26 @@ public class Code implements Printable {
 					BufferUtils.getUnsignedShort(info), (ClassReference) enclosingClass.getConstant(BufferUtils.getUnsignedShort(info)).data));
 		}
 		this.exceptionTable = Collections.unmodifiableList(exceptionTable);
+		StackMapTable stackMapTable = null;
 		List<ClassReference> exceptions = new LinkedList<>();
 		int attributesCount = BufferUtils.getUnsignedShort(info);
 		for (int i = 0; i < attributesCount; i++) {
 			AttributeStruct attribute = new AttributeStruct().read(info);
 			String attributeName = (String) enclosingClass.getConstant(attribute.attributeNameIndex).data;
-			if (attributeName.equals(AttributeStruct.EXCEPTIONS)) {
-				ByteBuffer attributeInfo = attribute.info;
+			ByteBuffer attributeInfo = attribute.info;
+			switch (attributeName) {
+			case AttributeStruct.STACK_MAP_TABLE:
+				stackMapTable = new StackMapTable(enclosingClass, attribute);
+				break;
+			case AttributeStruct.EXCEPTIONS:
 				int numberOfExceptions = BufferUtils.getUnsignedShort(attributeInfo);
 				for (int j = 0; j < numberOfExceptions; j++) {
 					exceptions.add((ClassReference) enclosingClass.getConstant(BufferUtils.getUnsignedShort(attributeInfo)).data);
 				}
+				break;
 			}
 		}
+		this.stackMapTable = stackMapTable;
 		this.exceptions = Collections.unmodifiableList(exceptions);
 	}
 
@@ -797,8 +821,11 @@ public class Code implements Printable {
 			p.println(handler.toString());
 		}
 		p.unindent()
-		.println("]")
-		.println("Exceptions Thrown [")
+		.println("]");
+		if (stackMapTable != null) {
+			p.print(stackMapTable);
+		}
+		p.println("Exceptions Thrown [")
 		.indent();
 		for (ClassReference exception : exceptions) {
 			p.println(exception.toString());

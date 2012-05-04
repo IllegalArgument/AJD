@@ -34,6 +34,10 @@ public class MethodReference {
 		this.returnType = new ClassReference(descriptor);
 	}
 	
+	public boolean isInit() {
+		return name.equals("<init>");
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();

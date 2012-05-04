@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import classfile.code.ComputationalType;
+import classfile.code.opcodes.ComputationalType;
 
 public class ClassReference {
 

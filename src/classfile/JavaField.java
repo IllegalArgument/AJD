@@ -27,14 +27,16 @@ public class JavaField implements Printable {
 		for (int i = 0; i < struct.attributesCount; i++) {
 			String attributeName = (String) enclosingClass.getConstant(struct.attributes[i].attributeNameIndex).data;
 			ByteBuffer attributeInfo = struct.attributes[i].info;
-			if (attributeName.equals(AttributeStruct.SYNTHETIC)) {
+			switch (attributeName) {
+			case AttributeStruct.SYNTHETIC:
 				isSynthetic = true;
-			}
-			if (attributeName.equals(AttributeStruct.DEPRECATED)) {
+				break;
+			case AttributeStruct.DEPRECATED:
 				isDeprecated = true;
-			}
-			if (attributeName.equals(AttributeStruct.CONSTANT_VALUE)) {
+				break;
+			case AttributeStruct.CONSTANT_VALUE:
 				constantValue = enclosingClass.getConstant(BufferUtils.getUnsignedShort(attributeInfo));
+				break;
 			}
 		}
 		this.isSynthetic = isSynthetic;

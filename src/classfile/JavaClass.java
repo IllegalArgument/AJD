@@ -18,7 +18,7 @@ public class JavaClass implements Printable {
 	public static final int MAGIC = 0xCAFEBABE;
 
 	public final ClassVersion version;
-	private final ConstantEntry[] constantPool;
+	private ConstantEntry[] constantPool;
 	public final ClassFlags flags;
 	public final ClassReference thisType;
 	public final ClassReference superType;

@@ -1,6 +1,6 @@
 package analysis.data;
 
-import classfile.code.ShiftType;
+import classfile.code.opcodes.ShiftType;
 
 public class ShiftArithmetic {
 	
