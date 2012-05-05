@@ -1,6 +1,7 @@
 package classfile;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -105,20 +106,20 @@ public class ClassStore {
 		startTime = System.currentTimeMillis();
 		/*for (Set<Path> pathSet : paths.values()) {
 			for (Path path : pathSet) {*/
-				JavaClass clazz = findClass("client");
+				JavaClass clazz = findClass("aem");
 				//System.out.println(new PrettyPrinter().print(clazz));
 				for (JavaMethod method : clazz.methods.values()) {
 					if (method.code != null) {
 						//System.out.println(method.reference);
 						MethodAnalyzer analyzer = new MethodAnalyzer(method);
-						/*String gml = analyzer.dataGML();
+						String gml = analyzer.dataGML();
 						String file = "graphs/" + method.reference.toString().replaceAll("[\\[\\]()<>:]", ".");
 						file = file.length() > 64 ? file.substring(0, 64) : file;
 						file += ".gml";
 						PrintWriter p = new PrintWriter(file);
 						p.print(gml);
 						p.flush();
-						p.close();*/
+						p.close();
 					}
 				}
 		/*	}

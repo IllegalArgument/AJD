@@ -90,7 +90,7 @@ public class MethodAnalyzer {
 	/*
 	 * TODO:
 	 * Handle back edges properly in the merging procedure
-	 * Use StackMapTable instead of inferring
+	 * Use StackMapTable instead of/in addition to inferring
 	 * SUBROUTINES
 	 * EXCEPTION HANDLERS
 	 */
