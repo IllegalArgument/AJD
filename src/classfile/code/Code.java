@@ -797,6 +797,16 @@ public class Code implements Printable {
 		this.stackMapTable = stackMapTable;
 		this.exceptions = Collections.unmodifiableList(exceptions);
 	}
+	
+	public int previous(int bci) {
+		while (ops.get(--bci) == null) ;
+		return bci;
+	}
+	
+	public int next(int bci) {
+		while (ops.get(++bci) == null) ;
+		return bci;
+	}
 
 	@Override
 	public void printOn(PrettyPrinter p) {

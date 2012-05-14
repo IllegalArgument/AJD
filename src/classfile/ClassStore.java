@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import analysis.MethodAnalyzer;
+import analysis.flow.BasicBlockGraph;
 import classfile.struct.ClassStruct;
 
 public class ClassStore {
@@ -106,13 +106,13 @@ public class ClassStore {
 		startTime = System.currentTimeMillis();
 		/*for (Set<Path> pathSet : paths.values()) {
 			for (Path path : pathSet) {*/
-				JavaClass clazz = findClass("aem");
+				JavaClass clazz = findClass("client");
 				//System.out.println(new PrettyPrinter().print(clazz));
 				for (JavaMethod method : clazz.methods.values()) {
 					if (method.code != null) {
-						//System.out.println(method.reference);
-						MethodAnalyzer analyzer = new MethodAnalyzer(method);
-						String gml = analyzer.dataGML();
+						System.out.println(method.reference);
+						BasicBlockGraph graph = new BasicBlockGraph(method);
+						String gml = graph.gml();
 						String file = "graphs/" + method.reference.toString().replaceAll("[\\[\\]()<>:]", ".");
 						file = file.length() > 64 ? file.substring(0, 64) : file;
 						file += ".gml";

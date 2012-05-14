@@ -73,9 +73,11 @@ public class MethodAnalyzer {
 	private final NavigableMap<Integer, BasicBlock> basicBlocks;
 	private final BasicBlock startBasicBlock;
 
-	private Queue<BasicBlock> visitQueue = new LinkedList<>();
 	private Map<BasicBlock, Map<DataBlock, Deque<Value>>> stackDefinitions = new HashMap<>();
 	private Map<BasicBlock, Map<DataBlock, List<Value>>> localDefinitions = new HashMap<>();
+	private Map<BasicBlock, Deque<Value>> computedStacks = new HashMap<>();
+	private Queue<BasicBlock> visitQueue = new LinkedList<>();
+	private Set<BasicBlock> backTargets = new HashSet<>();
 	private Deque<Value> stack;
 	private List<Value> locals;
 	private int localsCount;
@@ -294,6 +296,7 @@ public class MethodAnalyzer {
 				BasicBlock successor = basicBlocks.get(successorPc);
 				if (exploring.contains(successor)) {
 					BasicBlock.connect(block, successor, true);
+					backTargets.add(successor);
 				} else {
 					BasicBlock.connect(block, successor, false);
 					connectBasicBlock(successor, exploring, visited);
@@ -331,9 +334,8 @@ public class MethodAnalyzer {
 			arguments.add(null);
 		}
 		localDefinitions.get(startBasicBlock).put(null, arguments);
-
-		visitQueue.add(startBasicBlock);
 		Set<BasicBlock> visited = new HashSet<>();
+		visitQueue.add(startBasicBlock);
 		while (!visitQueue.isEmpty()) {
 			visitBlock(visitQueue.poll(), visited);
 		}
@@ -360,16 +362,32 @@ public class MethodAnalyzer {
 				}
 			}
 			stack = new LinkedList<>(mergeStacks(stackDefinitions.get(block)));
+			if (backTargets.contains(block)) {
+				System.out.println("Back target " + block);
+				Deque<Value> previousStack = computedStacks.get(block);
+				System.out.println("Last stack was " + previousStack);
+				System.out.println("Stack is now " + stack);
+				if (previousStack != null) {
+					if (!previousStack.equals(stack)) {
+						System.out.println("Stacks do not match");
+					} else {
+						System.out.println("Stacks merged successfully");
+					}
+				}
+				System.out.println();
+			}
+			computedStacks.put(block, new LinkedList<>(stack));
 			locals = new ArrayList<>(mergeLocals(localDefinitions.get(block)));
 			DataBlock dataBlock = createDataBlock(block);
 			dataBlockMap.put(block, dataBlock);
 			for (Map.Entry<BasicBlock, Boolean> successorEntry : block.forwardEdges.entrySet()) {
-				if (!successorEntry.getValue()) {
-					BasicBlock successor = successorEntry.getKey();
-					stackDefinitions.get(successor).put(dataBlock, stack);
-					localDefinitions.get(successor).put(dataBlock, locals);
-					visitQueue.add(successor);
+				BasicBlock successor = successorEntry.getKey();
+				stackDefinitions.get(successor).put(dataBlock, stack);
+				localDefinitions.get(successor).put(dataBlock, locals);
+				if (successorEntry.getValue()) {
+					visited.remove(successor);
 				}
+				visitQueue.add(successor);
 			}
 		}
 	}
@@ -905,10 +923,11 @@ public class MethodAnalyzer {
 					merged.add(values.values().iterator().next());
 				} else {
 					if (!classes.isEmpty()) {
-						Value newStack = new Value(ValueType.STACK, stackIndex, ClassReference.leastCommonSuperclass(classes));
-						merged.add(newStack);
+						System.out.println("Started with " + stackMap.values());
+						merged.add(new Value(ValueType.STACK, stackIndex, ClassReference.leastCommonSuperclass(classes)));
 						for (Map.Entry<DataBlock, Value> valueEntry : values.entrySet()) {
 							Value value = valueEntry.getValue();
+							System.out.println("Appending " + new Assignment(new Value(ValueType.STACK, stackIndex, value.classType), value) + " to " + valueEntry.getKey().hashCode());
 							valueEntry.getKey().assignments.add(new Assignment(new Value(ValueType.STACK, stackIndex, value.classType), value));
 						}
 					} else {
