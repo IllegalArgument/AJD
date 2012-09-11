@@ -97,16 +97,18 @@ public class ClassStore {
 		long startTime = System.currentTimeMillis();
 		Path rs = FileSystems.getDefault().getPath("jars/rs_optimus.jar");
 		Path allatori = FileSystems.getDefault().getPath("jars/allatori.jar");
+		Path tests = FileSystems.getDefault().getPath("tests");
 		Path rt = FileSystems.getDefault().getPath("jars/rt.jar");
 		addSearchPath(rs);
 		addSearchPath(allatori);
+		addSearchPath(tests);
 		addSearchPath(rt);
 		long endTime = System.currentTimeMillis();
 		System.out.println("Adding paths took " + (endTime - startTime) + " ms");
 		startTime = System.currentTimeMillis();
 		/*for (Set<Path> pathSet : paths.values()) {
 			for (Path path : pathSet) {*/
-				JavaClass clazz = findClass("client");
+				JavaClass clazz = findClass("Control");
 				//System.out.println(new PrettyPrinter().print(clazz));
 				for (JavaMethod method : clazz.methods.values()) {
 					if (method.code != null) {

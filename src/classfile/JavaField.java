@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import util.BufferUtils;
 import util.PrettyPrinter;
 import util.Printable;
+import classfile.constant.ConstantEntry;
 import classfile.struct.AttributeStruct;
 import classfile.struct.FieldStruct;
 

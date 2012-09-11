@@ -13,8 +13,6 @@ import util.PrettyPrinter;
 import util.Printable;
 import classfile.ClassFormatException;
 import classfile.ClassReference;
-import classfile.ConstantEntry;
-import classfile.ConstantType;
 import classfile.FieldReference;
 import classfile.JavaClass;
 import classfile.MethodReference;
@@ -35,6 +33,8 @@ import classfile.code.opcodes.OpType;
 import classfile.code.opcodes.Opcode;
 import classfile.code.opcodes.Switch;
 import classfile.code.stackmap.StackMapTable;
+import classfile.constant.ConstantEntry;
+import classfile.constant.ConstantType;
 import classfile.struct.AttributeStruct;
 
 public class Code implements Printable {
@@ -42,6 +42,7 @@ public class Code implements Printable {
 	public final int maxStack;
 	public final int maxLocals;
 	public final List<Opcode> ops;
+	public final int size;
 	public final List<ExceptionHandler> exceptionTable;
 	public final List<ClassReference> exceptions;
 	public final StackMapTable stackMapTable;
@@ -51,17 +52,21 @@ public class Code implements Printable {
 		maxStack = BufferUtils.getUnsignedShort(info);
 		maxLocals = BufferUtils.getUnsignedShort(info);
 		int codeLength = info.getInt();
+		//the length of the code data is stored as an unsigned int, but it probably will never go near the limit of a signed int, so this should never happen, but just in case...
 		if (codeLength < 0) {
 			throw new ClassFormatException("Code length greater than Integer.MAX_VALUE!");
 		}
 		List<Opcode> ops = new ArrayList<>(codeLength);
+		//the position in the buffer where the code data begins
 		int codeStart = info.position();
+		//limit the buffer to return true for hasRemaining until we've read codeLength bytes from it
 		info.limit(codeStart + codeLength);
 		int pos = 0;
 		while (info.hasRemaining()) {
+			//all of the cases in this switch are pretty much direct translations of the JVM spec
 			switch (BufferUtils.getUnsignedByte(info)) {
 			case NOP:
-				ops.add(new Opcode(OpType.NOOP, null));
+				ops.add(Opcode.NOOP);
 				break;
 			case ACONST_NULL:
 				ops.add(Opcode.ACONST_NULL);
@@ -559,7 +564,7 @@ public class Code implements Printable {
 				ops.add(new Opcode(OpType.COMPARE_JUMP, new CompareJump(CompareCondition.COMPARE_EQUAL, ComputationalType.REFERENCE, pos + info.getShort())));
 				break;
 			case IF_ACMPNE:
-				ops.add(new Opcode(OpType.COMPARE_JUMP, new CompareJump(CompareCondition.COMPARE_NOT_EQUAL, ComputationalType.INT, pos + info.getShort())));
+				ops.add(new Opcode(OpType.COMPARE_JUMP, new CompareJump(CompareCondition.COMPARE_NOT_EQUAL, ComputationalType.REFERENCE, pos + info.getShort())));
 				break;
 			case GOTO:
 				ops.add(new Opcode(OpType.UNCONDITIONAL_JUMP, pos + info.getShort()));
@@ -572,6 +577,7 @@ public class Code implements Printable {
 				break;
 			case TABLESWITCH:
 			{
+				//tableswitch is aligned on a four byte boundary, for some reason...
 				byte[] pad = new byte[3 - (pos % 4)];
 				info.get(pad);
 				int defaultJump = pos + info.getInt();
@@ -586,6 +592,7 @@ public class Code implements Printable {
 			}
 			case LOOKUPSWITCH:
 			{
+				//...so is lookupswitch
 				byte[] pad = new byte[3 - (pos % 4)];
 				info.get(pad);
 				int defaultJump = pos + info.getInt();
@@ -645,6 +652,7 @@ public class Code implements Printable {
 				break;
 			case NEWARRAY:
 			{
+				//newarray is only used for primitive types
 				Primitive type;
 				switch (BufferUtils.getUnsignedByte(info)) {
 				case ArrayInstantiation.T_BOOLEAN:
@@ -700,6 +708,7 @@ public class Code implements Printable {
 				break;
 			case WIDE:
 			{
+				//wide can only be used on a few ops, otherwise it's a bad op
 				switch (BufferUtils.getUnsignedByte(info)) {
 				case ILOAD:
 					ops.add(new Opcode(OpType.LOCAL_LOAD, new LocalVariable(BufferUtils.getUnsignedShort(info), ComputationalType.INT)));
@@ -760,6 +769,7 @@ public class Code implements Printable {
 			default:
 				throw new ClassFormatException("Unknown opcode encountered at index " + pos + "!");
 			}
+			//fill the ops list with nulls until the next op begins, to maintain the same indices as in the classfile
 			int nextPos = info.position() - codeStart;
 			for (int i = pos + 1; i < nextPos; i++) {
 				ops.add(null);
@@ -768,6 +778,7 @@ public class Code implements Printable {
 		}
 		info.limit(info.capacity());
 		this.ops = Collections.unmodifiableList(ops);
+		this.size = codeLength;
 		int exceptionTableLength = BufferUtils.getUnsignedShort(info);
 		List<ExceptionHandler> exceptionTable = new ArrayList<>();
 		for (int i = 0; i < exceptionTableLength; i++) {
@@ -799,12 +810,20 @@ public class Code implements Printable {
 	}
 	
 	public int previous(int bci) {
-		while (ops.get(--bci) == null) ;
+		do {
+			if (bci <= 0) {
+				return -1;
+			}
+		} while (ops.get(--bci) == null) ;
 		return bci;
 	}
 	
 	public int next(int bci) {
-		while (ops.get(++bci) == null) ;
+		do {
+			if (bci >= size - 1) {
+				return -1;
+			}
+		} while (ops.get(++bci) == null);
 		return bci;
 	}
 

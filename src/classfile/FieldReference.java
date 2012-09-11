@@ -1,5 +1,7 @@
 package classfile;
 
+import classfile.constant.NameAndType;
+
 public class FieldReference {
 	
 	public final ClassReference enclosingClass;

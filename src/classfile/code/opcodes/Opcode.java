@@ -1,11 +1,12 @@
 package classfile.code.opcodes;
 
-import classfile.ConstantEntry;
-import classfile.ConstantType;
 import classfile.Primitive;
+import classfile.constant.ConstantEntry;
+import classfile.constant.ConstantType;
 
 public class Opcode {
 
+	//for memory purposes, lots of opcodes are stored a constants, since there only exists one version of them
 	public static final Opcode
 	NOOP = new Opcode(OpType.NOOP, null),
 	ACONST_NULL = new Opcode(OpType.CONSTANT_LOAD, ConstantEntry.NULL),

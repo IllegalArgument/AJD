@@ -12,11 +12,7 @@ public class ExceptionHandler {
 		this.start = start;
 		this.end = end;
 		this.handler = handler;
-		if (catchType == null) {
-			this.catchType = new ClassReference("Ljava/lang/Throwable;");
-		} else {
-			this.catchType = catchType;
-		}
+		this.catchType = catchType;
 	}
 	
 	@Override

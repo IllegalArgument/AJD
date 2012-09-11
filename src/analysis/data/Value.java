@@ -1,9 +1,9 @@
 package analysis.data;
 
 import classfile.ClassReference;
-import classfile.ConstantEntry;
-import classfile.ConstantType;
 import classfile.Primitive;
+import classfile.constant.ConstantEntry;
+import classfile.constant.ConstantType;
 
 public class Value {
 	

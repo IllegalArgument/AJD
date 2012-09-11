@@ -1,6 +1,6 @@
-package classfile;
+package classfile.constant;
 
-class NameAndType {
+public class NameAndType {
 	
 	public final String name, type;
 

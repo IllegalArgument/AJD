@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import classfile.constant.NameAndType;
+
 public class MethodReference {
 	
 	public final ClassReference enclosingClass;
